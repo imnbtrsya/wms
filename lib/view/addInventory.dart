@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/inventoryRecord.dart';
 
 class AddInventoryPage extends StatefulWidget {
@@ -29,7 +30,7 @@ class _AddInventoryPageState extends State<AddInventoryPage> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
       final newItem = InventoryRecord(
         name: _nameController.text,
@@ -39,7 +40,14 @@ class _AddInventoryPageState extends State<AddInventoryPage> {
         sellingPrice: double.parse(_sellingPriceController.text),
         quantity: int.parse(_quantityController.text),
       );
-      Navigator.pop(context, newItem);
+
+      // Save to Firestore
+      await FirebaseFirestore.instance
+          .collection('inventory')
+          .doc(newItem.code)
+          .set(newItem.toMap());
+
+      Navigator.pop(context);
     }
   }
 

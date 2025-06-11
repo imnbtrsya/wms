@@ -9,7 +9,15 @@ class ItemDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Item Detail')),
+      appBar: AppBar(
+        title: const Text('Item Detail'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Back to InventoryPage
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -26,9 +34,14 @@ class ItemDetailPage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  final editedItem = await Navigator.pushNamed(context, '/editInventory', arguments: item) as InventoryRecord?;
+                  final editedItem = await Navigator.pushNamed(
+                    context,
+                    '/editInventory',
+                    arguments: item,
+                  ) as InventoryRecord?;
+
                   if (editedItem != null) {
-                    Navigator.pop(context, editedItem);
+                    Navigator.pop(context, editedItem); // Return to InventoryPage
                   }
                 },
                 child: const Text('Edit'),

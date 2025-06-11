@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/inventoryRecord.dart';
 
 class EditInventoryPage extends StatefulWidget {
@@ -42,7 +43,7 @@ class _EditInventoryPageState extends State<EditInventoryPage> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
       final updatedItem = InventoryRecord(
         name: _nameController.text,
@@ -52,6 +53,13 @@ class _EditInventoryPageState extends State<EditInventoryPage> {
         sellingPrice: double.parse(_sellingPriceController.text),
         quantity: int.parse(_quantityController.text),
       );
+
+      // Update in Firestore
+      await FirebaseFirestore.instance
+          .collection('inventory')
+          .doc(updatedItem.code)
+          .update(updatedItem.toMap());
+
       Navigator.pop(context, updatedItem);
     }
   }
@@ -75,7 +83,7 @@ class _EditInventoryPageState extends State<EditInventoryPage> {
                 controller: _codeController,
                 decoration: const InputDecoration(labelText: 'Item Code'),
                 validator: (value) => value == null || value.isEmpty ? 'Please enter a code' : null,
-                enabled: false, // disable editing code to keep it as unique id
+                enabled: false, // Don't allow changing code (ID)
               ),
               TextFormField(
                 controller: _categoryController,

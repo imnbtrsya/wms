@@ -1,42 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/inventoryRecord.dart';
 
 class InventoryController {
-  final List<InventoryRecord> _items = [
-    InventoryRecord(
-      name: "Laptop",
-      code: "ITM001",
-      category: "Electronics",
-      unitPrice: 1000.0,
-      sellingPrice: 1200.0,
-      quantity: 10,
-    ),
-    InventoryRecord(
-      name: "Mouse",
-      code: "ITM002",
-      category: "Accessories",
-      unitPrice: 15.0,
-      sellingPrice: 25.5,
-      quantity: 50,
-    ),
-    InventoryRecord(
-      name: "Keyboard",
-      code: "ITM003",
-      category: "Accessories",
-      unitPrice: 30.0,
-      sellingPrice: 45.0,
-      quantity: 30,
-    ),
-  ];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final List<InventoryRecord> _items = [];
 
   List<InventoryRecord> getItems() => _items;
 
-  void addItem(InventoryRecord newItem) {
+  /// ✅ Fetch all items from Firestore
+  Future<void> fetchItems() async {
+    final snapshot = await _firestore.collection('inventory').get();
+    _items.clear();
+    for (var doc in snapshot.docs) {
+      _items.add(InventoryRecord.fromMap(doc.data()));
+    }
+  }
+
+  /// ✅ Add a new item to Firestore and local list
+  Future<void> addItem(InventoryRecord newItem) async {
+    await _firestore.collection('inventory').doc(newItem.code).set(newItem.toMap());
     _items.add(newItem);
   }
 
-  void updateItem(InventoryRecord updatedItem) {
+  /// ✅ Update an existing item
+  Future<void> updateItem(InventoryRecord updatedItem) async {
     final index = _items.indexWhere((item) => item.code == updatedItem.code);
     if (index != -1) {
+      await _firestore.collection('inventory').doc(updatedItem.code).update(updatedItem.toMap());
       _items[index] = updatedItem;
     }
   }

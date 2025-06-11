@@ -1,11 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/inventoryRequest.dart';
 
 class RequestController {
-  final List<InventoryRequest> _requests = [];
+  final CollectionReference _requestCollection =
+      FirebaseFirestore.instance.collection('inventory_requests');
 
-  List<InventoryRequest> getRequests() => _requests;
+  // ✅ Add a new request to Firebase
+  Future<void> addRequest(InventoryRequest request) async {
+    await _requestCollection.add(request.toMap());
+  }
 
-  void addRequest(InventoryRequest request) {
-    _requests.add(request);
+  // ✅ Get all requests from Firebase
+  Future<List<InventoryRequest>> getRequests() async {
+    final querySnapshot = await _requestCollection.get();
+    return querySnapshot.docs
+        .map((doc) => InventoryRequest.fromMap(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 }

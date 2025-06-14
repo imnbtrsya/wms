@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:wms/screen/foremen_dashboard.dart';
 
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+class ForemenDrawer extends StatelessWidget {
+  const ForemenDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,17 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Dashboard'),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ForemenDashboard()),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.schedule),
             title: const Text('Schedule'),
             onTap: () {
@@ -28,15 +40,15 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Inventory'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/'); // only if needed
+              Navigator.pushReplacementNamed(context, '/');
             },
           ),
-          ListTile(
+          ListTile( //Navigate to Rating
             leading: const Icon(Icons.star),
             title: const Text('Rating'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/foremenList');
+              Navigator.pushNamed(context, '/ratedList');
             },
           ),
           ListTile(

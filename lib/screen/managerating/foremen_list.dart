@@ -1,11 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wms/controller/rating_controller.dart';
-import 'package:wms/model/rating_model.dart';
-import 'package:wms/screen/rating_form.dart';
+import 'package:wms/controller/managerating/rating_controller.dart';
+import 'package:wms/model/managerating/rating_model.dart';
+import 'package:wms/screen/managerating/rating_form.dart';
 import 'package:wms/widgets/owner_sidebar.dart';
-import 'package:wms/screen/rating_view.dart';
-import 'package:wms/screen/owner_dashboard.dart';
+import 'package:wms/screen/managerating/rating_view.dart';
+import 'package:wms/screen/dashboard/owner_dashboard.dart';
 
 class RatingFeedbackScreen extends StatefulWidget {
   const RatingFeedbackScreen({super.key});
@@ -48,14 +49,19 @@ class _RatingFeedbackScreenState extends State<RatingFeedbackScreen> {
   }
 
   Future<bool> hasRated(String foremanId) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return false;
+
     final snapshot = await FirebaseFirestore.instance
         .collection('ratings')
         .where('foremanId', isEqualTo: foremanId)
+        .where('ownerId', isEqualTo: currentUser.uid)
         .limit(1)
         .get();
 
     return snapshot.docs.isNotEmpty;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -156,16 +162,6 @@ class _RatingFeedbackScreenState extends State<RatingFeedbackScreen> {
                         ),
                         title: Text(foreman.name),
                         subtitle: Row(
-                          children: [
-                            Text("Jobs Completed: ${foreman.jobs}   "),
-                            Row(
-                              children: [
-                                const Icon(Icons.star,
-                                    color: Colors.amber, size: 16),
-                                Text("${foreman.rating}"),
-                              ],
-                            ),
-                          ],
                         ),
                         trailing: FutureBuilder<bool>(
                           future: hasRated(foreman.id),

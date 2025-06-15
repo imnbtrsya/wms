@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class DetailedRatedScreen extends StatelessWidget {
-  final String ownerName;
+  final String name;
   final double rating;
   final String comment;
 
   const DetailedRatedScreen({
     super.key,
-    required this.ownerName,
+    required this.name,
     required this.rating,
     required this.comment,
   });
@@ -51,7 +51,7 @@ class DetailedRatedScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        ownerName,
+                        name,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

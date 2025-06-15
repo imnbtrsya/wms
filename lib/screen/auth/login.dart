@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wms/screen/foremen_dashboard.dart';
-import 'package:wms/screen/owner_dashboard.dart';
+import 'package:wms/screen/dashboard/foremen_dashboard.dart';
+import 'package:wms/screen/dashboard/owner_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

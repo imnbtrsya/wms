@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wms/model/rating_model.dart';
-import 'package:wms/screen/foremen_list.dart';
+import 'package:wms/model/managerating/rating_model.dart';
+import 'package:wms/controller/managerating/rating_controller.dart';
+import 'package:wms/screen/managerating/foremen_list.dart';
 
 class RatingEditScreen extends StatefulWidget {
   final String docId;
@@ -18,6 +18,8 @@ class RatingEditScreen extends StatefulWidget {
 }
 
 class _RatingEditScreenState extends State<RatingEditScreen> {
+  final RatingController _ratingController = RatingController();
+
   double _rating = 0;
   final TextEditingController _reviewController = TextEditingController();
   bool _isLoading = true;
@@ -28,44 +30,48 @@ class _RatingEditScreenState extends State<RatingEditScreen> {
     _loadRatingData();
   }
 
-  Future<void> _loadRatingData() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('ratings')
-        .doc(widget.docId)
-        .get();
+  Rating? _originalRating;
 
-    if (doc.exists) {
-      final data = doc.data()!;
+  Future<void> _loadRatingData() async {
+    final rating = await _ratingController.getRatingByDocId(widget.docId);
+    if (rating != null) {
       setState(() {
-        _rating = (data['rating'] ?? 0).toDouble();
-        _reviewController.text = data['review'] ?? '';
+        _originalRating = rating; 
+        _rating = rating.rating;
+        _reviewController.text = rating.review;
         _isLoading = false;
       });
     }
   }
 
-  void _submitRating() async {
-    await FirebaseFirestore.instance
-        .collection('ratings')
-        .doc(widget.docId)
-        .update({
-      'rating': _rating,
-      'review': _reviewController.text.trim(),
-      'timestamp': Timestamp.now(),
-    });
+  Future<void> _submitRating() async {
+    if (_originalRating == null) return;
+
+    final updatedRating = Rating(
+      foremanId: widget.foreman.id,
+      foremanName: widget.foreman.name,
+      ownerId: _originalRating!.ownerId,
+      ownerName: _originalRating!.ownerName,
+      ownerEmail: _originalRating!.ownerEmail,
+      rating: _rating,
+      review: _reviewController.text.trim(),
+      timestamp: DateTime.now(),
+    );
+
+    await _ratingController.updateRating(widget.docId, updatedRating);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Rating successfully updated!'),
           backgroundColor: Colors.green,
-        ),
+      ) ,
       );
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const RatingFeedbackScreen()),
-        (Route<dynamic> route) => false,
-    );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const RatingFeedbackScreen()),
+        (route) => false,
+      );
     }
   }
 

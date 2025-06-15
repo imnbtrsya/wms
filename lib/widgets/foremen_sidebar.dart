@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wms/screen/foremen_dashboard.dart';
+import 'package:wms/screen/dashboard/foremen_dashboard.dart';
 
 class ForemenDrawer extends StatelessWidget {
   const ForemenDrawer({super.key});

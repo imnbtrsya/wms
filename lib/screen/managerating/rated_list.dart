@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wms/screen/foremen_dashboard.dart';
+import 'package:wms/controller/managerating/rating_controller.dart';
+import 'package:wms/model/managerating/rating_model.dart';
+import 'package:wms/screen/dashboard/foremen_dashboard.dart';
 import 'package:wms/widgets/foremen_sidebar.dart';
-import 'package:wms/screen/detailed_rated.dart';
+import 'package:wms/screen/managerating/detailed_rated.dart';
 
 class RatedListScreen extends StatefulWidget {
   const RatedListScreen({super.key});
@@ -12,8 +14,10 @@ class RatedListScreen extends StatefulWidget {
 }
 
 class _RatedListScreenState extends State<RatedListScreen> {
+  final RatingController _ratingController = RatingController();
+
   double averageRating = 0.0;
-  List<Map<String, dynamic>> ratings = [];
+  List<Rating> ratings = [];
 
   @override
   void initState() {
@@ -22,26 +26,21 @@ class _RatedListScreenState extends State<RatedListScreen> {
   }
 
   Future<void> fetchAllRatings() async {
-    final snapshot = await FirebaseFirestore.instance.collection('ratings').get();
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
 
-    if (snapshot.docs.isEmpty) return;
+    final List<Rating> allRatings = await _ratingController.getRatingsByForemanId(currentUser.uid);
+
+    if (allRatings.isEmpty) return;
 
     double total = 0.0;
-    final data = snapshot.docs.map((doc) {
-      final rating = doc['rating']?.toDouble() ?? 0.0;
-      final ownerName = doc['name'] ?? 'Unknown User';
-      final comment = doc['review'] ?? '';
-      total += rating;
-      return {
-        'rating': rating,
-        'ownerName': ownerName,
-        'comment': comment,
-      };
-    }).toList();
+    for (var r in allRatings) {
+      total += r.rating;
+    }
 
     setState(() {
-      ratings = data;
-      averageRating = total / data.length;
+      ratings = allRatings;
+      averageRating = total / allRatings.length;
     });
   }
 
@@ -123,9 +122,9 @@ class _RatedListScreenState extends State<RatedListScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => DetailedRatedScreen(
-                                  ownerName: review['ownerName'],
-                                  rating: review['rating'],
-                                  comment: review['comment'],
+                                  name: review.ownerName,
+                                  rating: review.rating,
+                                  comment: review.review,
                                 ),
                               ),
                             );
@@ -142,9 +141,9 @@ class _RatedListScreenState extends State<RatedListScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    review['ownerName'],
+                                    "${review.ownerName}",
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue,
                                     ),
@@ -153,7 +152,7 @@ class _RatedListScreenState extends State<RatedListScreen> {
                                   Row(
                                     children: List.generate(5, (i) {
                                       return Icon(
-                                        i < review['rating']
+                                        i < review.rating
                                             ? Icons.star
                                             : Icons.star_border,
                                         color: Colors.amber,
@@ -163,7 +162,7 @@ class _RatedListScreenState extends State<RatedListScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    review['comment'],
+                                    review.review,
                                     style: const TextStyle(fontSize: 15),
                                   ),
                                 ],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:wms/model/rating_model.dart';
-import 'package:wms/screen/foremen_list.dart';
+import 'package:wms/model/managerating/rating_model.dart';
+import 'package:wms/screen/managerating/foremen_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -32,26 +32,31 @@ class _RatingFormScreenState extends State<RatingFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please provide a rating')),
       );
-      return;
+    return;
     }
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('User not logged in');
 
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users') 
-        .doc(user.uid)
-        .get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
 
       final userName = userDoc.data()?['name'] ?? 'Anonymous';
       final userEmail = user.email ?? 'NoEmail';
+
+      print("User ID: ${user.uid}");
+      print("User Name from Firestore: $userName");
+      print("User Email from FirebaseAuth: ${user.email}");
+      print("User Email from Firestore: ${userDoc.data()?['email']}");
 
       await FirebaseFirestore.instance.collection('ratings').add({
         'foremanId': widget.foreman.id,
         'foremanName': widget.foreman.name,
         'ownerId': user.uid,
-        'name': userName, // <- renamed field
+        'name': userName,
         'ownerEmail': userEmail,
         'rating': _rating,
         'review': reviewText,
@@ -59,8 +64,9 @@ class _RatingFormScreenState extends State<RatingFormScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Feedback submitted!'),
-        backgroundColor: Colors.green,
+        const SnackBar(
+          content: Text('Feedback submitted!'),
+          backgroundColor: Colors.green,
         ),
       );
 
@@ -74,6 +80,7 @@ class _RatingFormScreenState extends State<RatingFormScreen> {
         MaterialPageRoute(builder: (context) => const RatingFeedbackScreen()),
       );
     } catch (e) {
+      print("Error during submission: $e"); // 👈 Add this
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to submit feedback: $e')),
       );

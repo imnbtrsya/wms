@@ -3,15 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Foreman {
   final String id;
   final String name;
-  final double rating;
-  final int jobs;
   final String image;
 
   Foreman({
     required this.id,
     required this.name,
-    required this.rating,
-    required this.jobs,
     required this.image,
   });
 
@@ -19,8 +15,6 @@ class Foreman {
     return {
       'id': id,
       'name': name,
-      'rating': rating,
-      'jobs': jobs,
       'image': image,
     };
   }
@@ -29,14 +23,21 @@ class Foreman {
     return Foreman(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
-      rating: (map['rating'] ?? 0).toDouble(),
-      jobs: map['jobs'] ?? 0,
+      image: map['image'] ?? 'assets/user.jpg',
+    );
+  }
+
+  factory Foreman.fromUserDoc(String docId, Map<String, dynamic> map) {
+    return Foreman(
+      id: docId,
+      name: map['name'] ?? '',
       image: map['image'] ?? 'assets/user.jpg',
     );
   }
 }
 
 class Rating {
+  final String? id;
   final String foremanId;
   final String foremanName;
   final String ownerId;
@@ -47,6 +48,7 @@ class Rating {
   final DateTime timestamp;
 
   Rating({
+    this.id,
     required this.foremanId,
     required this.foremanName,
     required this.ownerId,
@@ -66,12 +68,15 @@ class Rating {
       'ownerEmail': ownerEmail,
       'rating': rating,
       'review': review,
-      'timestamp': timestamp,
+      'timestamp': Timestamp.fromDate(timestamp),
     };
   }
 
-  factory Rating.fromMap(Map<String, dynamic> map) {
+  factory Rating.fromMap(Map<String, dynamic> map, [String? id]) {
+    print('Rating fromMap: ${map}');
+    
     return Rating(
+      id: id,
       foremanId: map['foremanId'] ?? '',
       foremanName: map['foremanName'] ?? '',
       ownerId: map['ownerId'] ?? '',

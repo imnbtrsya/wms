@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wms/screen/owner_dashboard.dart';
+import 'package:wms/screen/dashboard/owner_dashboard.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});

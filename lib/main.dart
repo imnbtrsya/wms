@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:wms/screen/login.dart';
-import 'package:wms/screen/register.dart'; 
-import 'package:wms/screen/foremen_list.dart';
-import 'package:wms/screen/rated_list.dart';
+import 'package:wms/screen/auth/login.dart';
+import 'package:wms/screen/auth/register.dart';
+import 'package:wms/screen/dashboard/foremen_dashboard.dart';
+import 'package:wms/screen/dashboard/owner_dashboard.dart'; 
+import 'package:wms/screen/managerating/foremen_list.dart';
+import 'package:wms/screen/managerating/rated_list.dart';
 
 
 void main() async {
@@ -39,10 +41,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(), 
-        '/foremenList': (context) => const RatingFeedbackScreen(),
-        '/ratedList': (context) => const RatedListScreen(),
+        '/login': (context) => const LoginScreen(), //login
+        '/register': (context) => const RegisterScreen(), //register
+        '/foremanDashboard': (context) => const ForemenDashboard(), //foreman dashboard
+        '/ownerDashboard': (context) => const OwnerDashboard(), //owner dashboard
+        '/foremenList': (context) => const RatingFeedbackScreen(), //foreman list screen
+        '/ratedList': (context) => const RatedListScreen(), //rated list screen
       },
     );
   }

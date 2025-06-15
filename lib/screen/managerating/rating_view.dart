@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wms/model/managerating/rating_model.dart';
+import 'package:wms/controller/managerating/rating_controller.dart';
+import 'package:wms/screen/managerating/rating_edit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wms/model/rating_model.dart';
-import 'package:wms/screen/rating_edit.dart';
 
 class RatingViewScreen extends StatefulWidget {
   final Foreman foreman;
@@ -13,27 +15,39 @@ class RatingViewScreen extends StatefulWidget {
 }
 
 class _RatingViewScreenState extends State<RatingViewScreen> {
-  late Future<DocumentSnapshot> _ratingFuture;
+  late Future<DocumentSnapshot?> _ratingFuture;
 
   @override
   void initState() {
     super.initState();
-    _ratingFuture = FirebaseFirestore.instance
-        .collection('ratings')
-        .where('foremanId', isEqualTo: widget.foreman.id)
-        .limit(1)
-        .get()
-        .then((snapshot) => snapshot.docs.first);
-  }
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+     _ratingFuture = RatingController()
+          .getRatingByOwnerAndForeman(currentUser.uid, widget.foreman.id)
+          .then((rating) async {
+            if (rating == null) return null;
+            final snapshot = await FirebaseFirestore.instance
+                .collection('ratings')
+                .doc(rating.id)
+                .get();
+            return snapshot;
+          });
+    } else {
+      _ratingFuture = Future.value(null);
+    }
+  } 
 
   Widget buildRatingStars(double rating) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
-        return Icon(
-          index < rating ? Icons.star : Icons.star_border,
-          color: Colors.amber,
-        );
+        if (index < rating.floor()) {
+          return const Icon(Icons.star, color: Colors.amber);
+        } else if (index < rating && rating - index >= 0.5) {
+          return const Icon(Icons.star_half, color: Colors.amber);
+        } else {
+          return const Icon(Icons.star_border, color: Colors.amber);
+        }
       }),
     );
   }
@@ -51,18 +65,20 @@ class _RatingViewScreenState extends State<RatingViewScreen> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      body: FutureBuilder<DocumentSnapshot>(
+      body: FutureBuilder<DocumentSnapshot?>(
         future: _ratingFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
+
+          if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
             return const Center(child: Text("No rating found."));
           }
 
-          final docId = snapshot.data!.id;
-          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final doc = snapshot.data!;
+          final docId = doc.id;
+          final data = doc.data() as Map<String, dynamic>;
           final double rating = data['rating']?.toDouble() ?? 0.0;
           final String review = data['review'] ?? 'No review provided';
 
@@ -167,15 +183,13 @@ class _RatingViewScreenState extends State<RatingViewScreen> {
                         );
 
                         if (confirm == true) {
-                          await FirebaseFirestore.instance
-                              .collection('ratings')
-                              .doc(docId)
-                              .delete();
+                          await RatingController().deleteRating(docId);
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Rating deleted successfully'),
-                              backgroundColor: Colors.red,
+                              const SnackBar(
+                                content: Text('Rating deleted successfully'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                             Navigator.pop(context, 'deleted');

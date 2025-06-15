@@ -52,9 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
           throw Exception('User document not found.');
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ Login failed: $e');
+      debugPrint('🔍 Stacktrace:\n$stackTrace');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Login failed: ${e.toString()}')),
+        SnackBar(content: Text('❌ Login failed: $e')),
       );
     }
 

@@ -18,7 +18,7 @@ void main() async {
         apiKey: "AIzaSyD4_nahE0Hes0ypZRmt4Ib0J1iNW57wGfM",
         authDomain: "wms-gpsep.firebaseapp.com",
         projectId: "wms-gpsep",
-        storageBucket: "wms-gpsep.appspot.app", 
+        storageBucket: "wms-gpsep.appspot.com", 
         messagingSenderId: "467023206497",
         appId: "1:467023206497:web:87c10c54efe4aadcb6b220",
       ),
